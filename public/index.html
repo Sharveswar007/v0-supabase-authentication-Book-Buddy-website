@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Buddy - Your Literary Companion</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;900&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h1>📚 Book Buddy</h1>
+            </div>
+            <div class="nav-menu" id="nav-menu">
+                <a href="#home" class="nav-link">Home</a>
+                <a href="#browse" class="nav-link">Browse Books</a>
+                <a href="#recommendations" class="nav-link">Recommendations</a>
+                <button class="btn btn-outline" onclick="showAuth('login')">Login</button>
+                <button class="btn btn-primary" onclick="showAuth('signup')">Sign Up</button>
+            </div>
+            <div class="nav-toggle" id="nav-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">Discover Your Next Great Read</h1>
+            <p class="hero-subtitle">Connect with fellow book lovers, share recommendations, and explore a world of literary adventures.</p>
+            <div class="hero-buttons">
+                <button class="btn btn-primary btn-large" onclick="showAuth('signup')">Get Started</button>
+                <button class="btn btn-outline btn-large" onclick="scrollToSection('browse')">Browse Books</button>
+            </div>
+        </div>
+        <div class="hero-image">
+            <img src="/placeholder.svg?height=400&width=600" alt="Cozy reading space" />
+        </div>
+    </section>
+
+    <!-- Browse Books Section -->
+    <section id="browse" class="browse-section">
+        <div class="container">
+            <h2 class="section-title">Featured Books</h2>
+            <div class="books-grid" id="books-grid">
+                <!-- Books will be populated by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Recommendations Section -->
+    <section id="recommendations" class="recommendations-section">
+        <div class="container">
+            <h2 class="section-title">Personalized Recommendations</h2>
+            <div class="recommendations-grid" id="recommendations-grid">
+                <!-- Recommendations will be populated by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Authentication Modal -->
+    <div id="auth-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAuth()">&times;</span>
+            
+            <!-- Login Form -->
+            <div id="login-form" class="auth-form">
+                <h2>Welcome Back</h2>
+                <p>Sign in to your Book Buddy account</p>
+                <form onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label for="login-email">Email</label>
+                        <input type="email" id="login-email" required placeholder="Enter your email">
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Password</label>
+                        <input type="password" id="login-password" required placeholder="Enter your password">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full">Sign In</button>
+                </form>
+                <p class="auth-switch">Don't have an account? <a href="#" onclick="switchAuth('signup')">Sign up</a></p>
+            </div>
+
+            <!-- Signup Form -->
+            <div id="signup-form" class="auth-form" style="display: none;">
+                <h2>Join Book Buddy</h2>
+                <p>Create your account to start discovering books</p>
+                <form onsubmit="handleSignup(event)">
+                    <div class="form-group">
+                        <label for="signup-name">Full Name</label>
+                        <input type="text" id="signup-name" required placeholder="Enter your full name">
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-email">Email</label>
+                        <input type="email" id="signup-email" required placeholder="Enter your email">
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-password">Password</label>
+                        <input type="password" id="signup-password" required placeholder="Create a password">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full">Create Account</button>
+                </form>
+                <p class="auth-switch">Already have an account? <a href="#" onclick="switchAuth('login')">Sign in</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="payment-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closePayment()">&times;</span>
+            <div class="payment-form">
+                <h2>Complete Your Purchase</h2>
+                <div class="payment-progress">
+                    <div class="progress-step active" data-step="1">
+                        <span class="step-number">1</span>
+                        <span class="step-label">Book Details</span>
+                    </div>
+                    <div class="progress-step" data-step="2">
+                        <span class="step-number">2</span>
+                        <span class="step-label">Payment Info</span>
+                    </div>
+                    <div class="progress-step" data-step="3">
+                        <span class="step-number">3</span>
+                        <span class="step-label">Confirmation</span>
+                    </div>
+                </div>
+
+                <!-- Step 1: Book Details -->
+                <div id="payment-step-1" class="payment-step">
+                    <div class="book-summary">
+                        <img id="payment-book-cover" src="/placeholder.svg" alt="Book cover" class="book-cover-small">
+                        <div class="book-details">
+                            <h3 id="payment-book-title"></h3>
+                            <p id="payment-book-author"></p>
+                            <p class="price" id="payment-book-price"></p>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary btn-full" onclick="nextPaymentStep()">Continue to Payment</button>
+                </div>
+
+                <!-- Step 2: Payment Information -->
+                <div id="payment-step-2" class="payment-step" style="display: none;">
+                    <form onsubmit="handlePayment(event)">
+                        <div class="form-group">
+                            <label for="card-number">Card Number</label>
+                            <input type="text" id="card-number" placeholder="1234 5678 9012 3456" maxlength="19">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="expiry">Expiry Date</label>
+                                <input type="text" id="expiry" placeholder="MM/YY" maxlength="5">
+                            </div>
+                            <div class="form-group">
+                                <label for="cvv">CVV</label>
+                                <input type="text" id="cvv" placeholder="123" maxlength="3">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="cardholder-name">Cardholder Name</label>
+                            <input type="text" id="cardholder-name" placeholder="John Doe">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-full">Complete Purchase</button>
+                    </form>
+                </div>
+
+                <!-- Step 3: Confirmation -->
+                <div id="payment-step-3" class="payment-step" style="display: none;">
+                    <div class="payment-success">
+                        <div class="success-icon">✅</div>
+                        <h3>Payment Successful!</h3>
+                        <p>Your book has been added to your library.</p>
+                        <button class="btn btn-primary btn-full" onclick="closePayment()">Continue Reading</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Dashboard (shown after login) -->
+    <div id="user-dashboard" class="dashboard" style="display: none;">
+        <div class="dashboard-header">
+            <h2>Welcome back, <span id="user-name"></span>!</h2>
+            <button class="btn btn-outline" onclick="handleLogout()">Logout</button>
+        </div>
+        <div class="dashboard-content">
+            <div class="dashboard-section">
+                <h3>Your Library</h3>
+                <div id="user-library" class="books-grid">
+                    <!-- User's books will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Book Buddy</h3>
+                    <p>Your trusted companion for discovering amazing books and connecting with fellow readers.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#browse">Browse Books</a></li>
+                        <li><a href="#recommendations">Recommendations</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Book Buddy. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
